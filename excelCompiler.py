@@ -19,15 +19,37 @@ for xlsxfile in glob.glob("./To be compiled/*.xlsx"):
 
 ## dftobecompiled - dataframe to be compiled to the correct format ##
 ctemplatepath = 'TemplateTableFormats.xlsx'
-cwstypelist = ['Fire','Flying']  # material name list
-formattype = 'Basic' # database type
-newcollist = ['growth_arate','eng_ger_jap_name'] # must contain all items from mergecoldict
+cwstypelist = ['Water','Steel','Grass']  # material name list
+formattype = 'Academic' # database type
+newcollist = ['growth_rate','eng_ger_jap_name'] # must contain all items from mergecoldict
 renamedict = {'japanese_name':'jap_name'} # list of columns to rename
-mergecoldict = {'eng_ger_jap_name':[['+'], 'name', 'german_name','jap_name']} # merged col dict
+mergecoldict = {'eng_ger_jap_name':[[' '], 'name', 'german_name','jap_name']} # merged col dict
 # {merged column name : [[merge separator], col values to merge]}
-# indexmatchlist = [{}, {}]
-# enttype = ['Composite','Performance'] # entity type
-compilermode = 'polymerise' # compiler mode which determines how sheets should be compiled
+iminstructdict = {'growth_rates_list.xlsx': ['name','growth_rate','name','growth_rate']}
+compilermode = 'master' # compiler mode which determines how sheets should be compiled
 # standard = 1 sheet per excel file
 # master = all sheets in 1 excel file
 # polymerise = all sheets in 1 sheet in 1 excel file
+
+## Loading dataframe for current compilation task ##
+def getrawdf(xlsxfile, cwstype):
+    wb = load_workbook(xlsxfile)
+    ws = wb[cwstype]
+    ## converting excel ws to dataframe ##
+    wsdf = pd.DataFrame(ws.values)
+    wsdf.columns = wsdf.iloc[0]
+    wsdf = wsdf[1:]
+    return wsdf
+
+## Loading the correct format for current compilation task ##
+def getcorrectformat(templatesheet, cwstype, formattype):
+    correctformat = []
+    for worksheetname in templatesheet:
+        for row in range(1, templatesheet.max_row + 1):
+            if cwstype == templatesheet.cell(row=row, column=1).value:
+                for col in range(1, templatesheet.max_column + 1):
+                    correctformat.append(templatesheet.cell(row=row, column=col).value)
+                correctformat.pop(0)
+                while correctformat[-1] is None:
+                    del correctformat[-1]
+                return correctformat
