@@ -83,3 +83,32 @@ def renamereformat(wsdf, correctformat, renamedict, newcollist, mergecoldict):
     # Removing identical rows #
     wsdf = wsdf.drop_duplicates()
     return wsdf
+
+## wsdf compiler ##
+def wsdfcompiler(dftobecompiled, wsdf):
+    dftobecompiled = pd.concat([dftobecompiled, wsdf])
+    return dftobecompiled
+
+## ReFormat, Compiles, Index Match and Exports the final dataframe 'sheet' ##
+def rfcoimexsheet(ctemplatepath, sheetdict, formattype, cwstype, renamedict, newcollist, mergecoldict, iminstructdict):
+    templatesheet = gettemplatesheet(ctemplatepath, formattype)
+    correctformat = getcorrectformat(templatesheet, cwstype, formattype)
+    dftobecompiled = pd.DataFrame(columns=[correctformat])  # dataframe to be compiled to the correct format #
+
+    print('==== For type name: ', cwstype, ' ====')  ########################## console.log ####################
+    for xlsxfile in glob.glob("./To be compiled/*.xlsx"):
+        filename = xlsxfile.replace('./To be compiled\\', '')
+        if cwstype in sheetdict[filename]:
+            print(filename)  ########################## console.log ####################
+            wsdf = getrawdf(xlsxfile, cwstype)
+            wsdf = renamereformat(wsdf, correctformat, renamedict, newcollist, mergecoldict)
+            if dftobecompiled.empty == True:
+                dftobecompiled = wsdf
+            else:
+                dftobecompiled = wsdfcompiler(dftobecompiled, wsdf)
+
+    # Index Matching #
+    iminstructdictc = checkindexmatch(dftobecompiled, iminstructdict)
+    dftobecompiled = im.indexmatcher(dftobecompiled, iminstructdictc)
+
+    return dftobecompiled
