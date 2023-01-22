@@ -53,3 +53,33 @@ def getcorrectformat(templatesheet, cwstype, formattype):
                 while correctformat[-1] is None:
                     del correctformat[-1]
                 return correctformat
+
+def renamereformat(wsdf, correctformat, renamedict, newcollist, mergecoldict):
+    # renaming columns #
+    for cname in renamedict:
+        if cname in wsdf.columns and renamedict[cname] not in wsdf.columns:
+            wsdf.rename(columns={cname: renamedict[cname]}, inplace=True)
+    # creating new columns #
+    for col in newcollist:
+        if col not in wsdf.columns:
+            wsdf[col] = ""
+    # creating merge columns #
+    for cname in mergecoldict:
+        wsdf[cname] = ""
+        for mergecol in mergecoldict:
+            for index in range(len(mergecoldict[mergecol])):
+                wsdf[cname] += wsdf[mergecoldict[mergecol][index + 1]].astype(str)
+                if (index + 1) == (len(mergecoldict[mergecol]) - 1):
+                    break
+                else:
+                    wsdf[cname] += mergecoldict[mergecol][0][0]
+    # Removing blank rows #
+    wsdf = wsdf.dropna(how='all')
+    # creating df with corrected format #
+    for colname in correctformat:
+        if colname not in wsdf.columns:
+            wsdf[colname] = ""
+    wsdf = wsdf[correctformat].copy()
+    # Removing identical rows #
+    wsdf = wsdf.drop_duplicates()
+    return wsdf
