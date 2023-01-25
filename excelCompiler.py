@@ -112,3 +112,11 @@ def rfcoimexsheet(ctemplatepath, sheetdict, formattype, cwstype, renamedict, new
     dftobecompiled = im.indexmatcher(dftobecompiled, iminstructdictc)
 
     return dftobecompiled
+
+def finalsheetscompiler(ctemplatepath, formattype, cwstype, renamedict, newcollist, mergecoldict, compilermode, iminstructdict):
+    sheetdict = asdl.getsheetdict()
+    finalsheetsdict = dict()
+#     if compilermode != 'polymerise':
+    for cwstype in cwstypelist:
+        finalsheetsdict[cwstype] = rfcoimexsheet(ctemplatepath, sheetdict, formattype, cwstype, renamedict, newcollist, mergecoldict, iminstructdict)
+    return finalsheetsdict
