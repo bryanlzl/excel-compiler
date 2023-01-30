@@ -11,7 +11,6 @@ import allSheetdictloader as asdl
 import indexMatch as im
 import excelExporter as ee
 
-
 def getimsheetdict():
     imsheetdict = dict()
     for xlsxfile in glob.glob("./Index match/*.xlsx"):
@@ -125,10 +124,27 @@ def rfcoimexsheet(ctemplatepath, sheetdict, formattype, cwstype, renamedict, new
     
     return dftobecompiled
 
-def finalsheetscompiler(ctemplatepath, formattype, cwstypelist, renamedict, newcollist, mergecoldict, compilermode, iminstructdict):
+def finalsheetscompiler(ctemplatepath, formattype, cwstype, renamedict, newcollist, mergecoldict, compilermode, iminstructdict):
     sheetdict = asdl.getsheetdict()
     finalsheetsdict = dict()
 #     if compilermode != 'polymerise':
     for cwstype in cwstypelist:
         finalsheetsdict[cwstype] = rfcoimexsheet(ctemplatepath, sheetdict, formattype, cwstype, renamedict, newcollist, mergecoldict, iminstructdict)
     return finalsheetsdict
+
+## dftobecompiled - dataframe to be compiled to the correct format ##
+ctemplatepath = './Template columns/TemplateTableFormats.xlsx'
+cwstypelist = ['Water','Steel','Grass']  # material name list
+formattype = 'Academic' # database type
+newcollist = ['growth_rate','eng_ger_jap_name'] # must contain all items from mergecoldict
+renamedict = {'japanese_name':'jap_name'} # list of columns to rename
+mergecoldict = {'eng_ger_jap_name':[[' '], 'name', 'german_name','jap_name']} # merged col dict
+# {merged column name : [[merge separator], col values to merge]}
+iminstructdict = {'growth_rates_list.xlsx': ['name','growth_rate','name','growth_rate']}
+compilermode = 'master' # compiler mode which determines how sheets should be compiled
+# standard = 1 sheet per excel file 
+# master = all sheets in 1 excel file 
+# polymerise = all sheets in 1 sheet in 1 excel file
+
+finalsheetsdict = finalsheetscompiler(ctemplatepath, formattype, cwstypelist, renamedict, newcollist, mergecoldict, compilermode, iminstructdict)
+ee.excelfilecreator(finalsheetsdict, cwstypelist, formattype, compilermode)
